@@ -102,13 +102,15 @@ public:
 
 	Empirical& operator=(const Empirical& ED);//+
 
-	double algorithm_empirical() const;//+
+	double algorithm_empirical() const;//random var
 
 	vector<double> generate_x_selection() const;//+
 
 	vector<double> generate_f_selection() const;//+
 
-	vector<pair<double, double>> generate_pair() const;
+	vector<pair<double, double>> generate_pair(const int n, const vector<double>& x_selection = {}) const override;//tabel values
+
+	vector<double> generate_values() const;
 
 	vector<double> get_x_selection() const;//+
 
@@ -118,7 +120,7 @@ public:
 
 	int get_k() const;//+
 
-	void save_to_file(ofstream& file);//+
+	void save_to_file(ofstream& file) override;//+
 
 	void load_file(ifstream& file) override;
 

@@ -17,7 +17,7 @@ public:
 
 	vector<double> virtual generate_sequence(const int n) const = 0;
 
-	vector<pair<double, double>> virtual generate_table_of_values(const int n, const vector<double>& x_s = {}) const = 0;
+	vector<pair<double, double>> virtual generate_pair(const int n, const vector<double>& x_selection = {}) const = 0;
 };
 
 __interface IPersistent

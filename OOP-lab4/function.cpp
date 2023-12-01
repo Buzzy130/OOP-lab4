@@ -516,17 +516,17 @@ vector<double> Empirical::generate_values() const
 	vector<double> result;
 
 	for (const double& x : x_selection)
-		result.push_back(f(x));
+		result.push_back(H_Empirical(x));
 
 	return result;
 }
 
-vector<pair<double, double>> Empirical::generate_table_of_values(const int n, const vector<double>& x_s) const
+vector<pair<double, double>> Empirical::generate_pair(const int n, const vector<double>& x_selection) const
 {
 	vector<pair<double, double >> result;
 
 	for (int i = 0; i < n; i++)
-		result.push_back(make_pair(x_s[i], f_selection[i]));
+		result.push_back(make_pair(x_selection[i], f_selection[i]));
 
 	return result;
 }
@@ -553,7 +553,7 @@ int Empirical::get_k() const
 
 void Empirical::save_to_file(ofstream& file)
 {
-	vector<pair<double, double>> pairs = generate_table_of_values(n);
+	vector<pair<double, double>> pairs = generate_pair(n);
 
 	ofstream file_sequence;
 	ofstream file_values;
@@ -605,27 +605,27 @@ void Empirical::load_file(ifstream& file)
 	while (!file.eof())
 	{
 		file >> x;
-		x_s.push_back(x);
+		x_selection.push_back(x);
 	}
 	file.close();
 
-	n = x_s.size();
+	n = x_selection.size();
 	k = (int)floor(log2(n)) + 1;
-	f_s = generate_values();
+	f_selection = generate_values();
 }
 
 
 double Empirical::H_Empirical(const double x) const
 {
 	int k = (int)floor(log2((double)n)) + 1;
-	double min_x = *min_element(begin(x_s), end(x_s));
-	double max_x = *max_element(begin(x_s), end(x_s));
+	double min_x = *min_element(begin(x_selection), end(x_selection));
+	double max_x = *max_element(begin(x_selection), end(x_selection));
 	double delta = (max_x - min_x) / (double)k;
 
 	for (int i = 0; i < k; i++)
 		if (min_x + delta * i <= x && x < min_x + delta * (i + 1))
 		{
-			int n_i = count_if(x_s.begin(), x_s.end(), [i, k, min_x, max_x, delta](double x) { return i == k - 1 ? min_x + delta * (double)i <= x && x <= min_x + delta * (double)(i + 1) : min_x + delta * (double)i <= x && x < min_x + delta * (double)(i + 1); });
+			int n_i = count_if(x_selection.begin(), x_selection.end(), [i, k, min_x, max_x, delta](double x) { return i == k - 1 ? min_x + delta * (double)i <= x && x <= min_x + delta * (double)(i + 1) : min_x + delta * (double)i <= x && x < min_x + delta * (double)(i + 1); });
 			return n_i / (n * delta);
 		}
 
