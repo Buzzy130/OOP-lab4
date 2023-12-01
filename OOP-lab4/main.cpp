@@ -1,69 +1,59 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
 #include "function.h"
-#include "Distribution.h"
 #include "function.cpp"
-#define _USE_MATH_DEFINES
-#include <cmath>
-#include <iomanip>
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <random>
-#include <numeric>
-#include <algorithm>
-#include <string>
-using namespace std;
+#include "Distribution.h"
+#include "lib.h"
 
 void demo()
 {
 	cout << "7. Тест позднего связывания:" << endl << endl;
 
-	HuberD* HD1 = new HuberD(1, 1, 2);
-	HuberD* HD2 = new HuberD(1, 2, 6);
-	HuberD* HD3 = new HuberD(1, 2, -6);
-	HuberD* HD4 = new HuberD(1, 1, -2);
+	Primary* HB1 = new Primary(1, 1, 2);
+	Primary* HB2 = new Primary(1, 2, 6);
+	Primary* HB3 = new Primary(1, 2, -6);
+	Primary* HB4 = new Primary(1, 1, -2);
 
-	Mixture<HuberD, HuberD>* MD1 = new Mixture<HuberD, HuberD>(HD1, HD2, 0.5);
-	Mixture<HuberD, HuberD>* MD2 = new Mixture<HuberD, HuberD>(HD3, HD4, 0.5);
-	Mixture<Mixture<HuberD, HuberD>, Mixture<HuberD, HuberD>>* MD = new Mixture<Mixture<HuberD, HuberD>, Mixture<HuberD, HuberD>>(MD1, MD2, 0.5);
+	Mixture<Primary, Primary>* MX1 = new Mixture<Primary, Primary>(HB1, HB2, 0.5);
+	Mixture<Primary, Primary>* MX2 = new Mixture<Primary, Primary>(HB3, HB4, 0.5);
+	Mixture<Mixture<Primary, Primary>, Mixture<Primary, Primary>>* MX = new Mixture<Mixture<Primary, Primary>, Mixture<Primary, Primary>>(MX1, MX2, 0.5);
 
 
-	cout << "Параметр формы 1: " << MD->get_component1()->get_component1()->get_v() << endl;
-	cout << "Параметр масштаба 1: " << MD->get_component1()->get_component1()->get_scale() << endl;
-	cout << "Параметр сдвига 1: " << MD->get_component1()->get_component1()->get_shift() << endl << endl;
+	cout << "Параметр формы 1: " << MX->get_component1()->get_component1()->get_v() << endl;
+	cout << "Параметр масштаба 1: " << MX->get_component1()->get_component1()->get_scale() << endl;
+	cout << "Параметр сдвига 1: " << MX->get_component1()->get_component1()->get_shift() << endl << endl;
 
-	cout << "Параметр формы 2: " << MD->get_component1()->get_component2()->get_v() << endl;
-	cout << "Параметр масштаба 2: " << MD->get_component1()->get_component2()->get_scale() << endl;
-	cout << "Параметр сдвига 2: " << MD->get_component1()->get_component2()->get_shift() << endl << endl;
+	cout << "Параметр формы 2: " << MX->get_component1()->get_component2()->get_v() << endl;
+	cout << "Параметр масштаба 2: " << MX->get_component1()->get_component2()->get_scale() << endl;
+	cout << "Параметр сдвига 2: " << MX->get_component1()->get_component2()->get_shift() << endl << endl;
 
-	cout << "Параметр формы 3: " << MD->get_component2()->get_component1()->get_v() << endl;
-	cout << "Параметр масштаба 3: " << MD->get_component2()->get_component1()->get_scale() << endl;
-	cout << "Параметр сдвига 3: " << MD->get_component2()->get_component1()->get_shift() << endl << endl;
+	cout << "Параметр формы 3: " << MX->get_component2()->get_component1()->get_v() << endl;
+	cout << "Параметр масштаба 3: " << MX->get_component2()->get_component1()->get_scale() << endl;
+	cout << "Параметр сдвига 3: " << MX->get_component2()->get_component1()->get_shift() << endl << endl;
 
-	cout << "Параметр формы 4: " << MD->get_component2()->get_component2()->get_v() << endl;
-	cout << "Параметр масштаба 4: " << MD->get_component2()->get_component2()->get_scale() << endl;
-	cout << "Параметр сдвига 4: " << MD->get_component2()->get_component2()->get_shift() << endl << endl;
+	cout << "Параметр формы 4: " << MX->get_component2()->get_component2()->get_v() << endl;
+	cout << "Параметр масштаба 4: " << MX->get_component2()->get_component2()->get_scale() << endl;
+	cout << "Параметр сдвига 4: " << MX->get_component2()->get_component2()->get_shift() << endl << endl;
 
 	cout << "Теоретические характеристики:" << endl;
-	cout << "Математическое ожидание: " << MD->M_Ksi() << endl;//?
-	cout << "Дисперсия: " << MD->D_Ksi() << endl;//?
-	cout << "Коэффиицент асимметрии: " << MD->asymmetry() << endl;
-	cout << "Коэффициент эксцесса: " << MD->kurtosis() << endl << endl;
+	cout << "Математическое ожидание: " << MX->expected_value() << endl;
+	cout << "Дисперсия: " << MX->variance() << endl;
+	cout << "Коэффиицент асимметрии: " << MX->asymmetry() << endl;
+	cout << "Коэффициент эксцесса: " << MX->kurtosis() << endl << endl;
 
-	Empirical* EM1 = new Empirical(MD, 10000, 0);
-	Empirical* EM2 = new Empirical(MD, 10000, 0);
+	Empirical* EM1 = new Empirical(MX, 10000, 0);
+	Empirical* EM2 = new Empirical(MX, 10000, 0);
 
 	cout << "Эмпирические характеристики:" << endl;
-	cout << "Математическое ожидание: " << MD->M_Ksi() << endl;//?
-	cout << "Дисперсия: " << MD->D_Ksi() << endl;//?
-	cout << "Коэффициент асимметрии: " << MD->asymmetry() << endl;
-	cout << "Коэффициент эксцесса: " << MD->kurtosis() << endl << endl;
+	cout << "Математическое ожидание: " << MX->expected_value() << endl;
+	cout << "Дисперсия: " << MX->variance() << endl;
+	cout << "Коэффициент асимметрии: " << MX->asymmetry() << endl;
+	cout << "Коэффициент эксцесса: " << MX->kurtosis() << endl << endl;
 
 
-	vector<pair<double, double>> s1 = MD->generate_pair(10000, MD->selection(10000));
-	vector<pair<double, double>> s2 = EM1->generate_pair(10000, EM1->selection(10000));
-	vector<pair<double, double>> s3 = EM2->generate_pair(10000, EM2->selection(10000));
+	vector<pair<double, double>> s1 = MX->generate_table_of_values(10000, MX->generate_sequence(10000));
+	vector<pair<double, double>> s2 = EM1->generate_table_of_values(10000, EM1->generate_sequence(10000));
+	vector<pair<double, double>> s3 = EM2->generate_table_of_values(10000, EM2->generate_sequence(10000));
 
 	ofstream file1;
 	ofstream file2;
@@ -85,18 +75,16 @@ void demo()
 	file3.close();
 }
 
-
-
 int main(int argc, char** argv)
 {
 	setlocale(LC_ALL, "ru");
 
-	//demo();
+	demo();
 
 	//start();
 
-	int result = Catch::Session().run(argc, argv);
-	return result;
+	//int result = Catch::Session().run(argc, argv);
+	//return result;
 
 	return 0;
 }
