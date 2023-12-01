@@ -27,21 +27,21 @@ public:
 
 	void save_to_file(ofstream& file) override;
 
-	double f(const double x) const override;
+	double density(const double x) const override;
 
-	double expected_value() const override;
+	double M_Ksi() const override;
 
-	double variance() const override;
+	double D_Ksi() const override;
 
 	double asymmetry() const override;
 
 	double kurtosis() const override;
 
-	double random_var() const override;
+	double algorithm() const override;
 
-	vector<double> generate_sequence(const int n) const override;
+	vector<double> selection(const int n) const override;
 
-	vector<pair<double, double>> generate_table_of_values(const int n, const vector<double>& x_s = {}) const override;
+	vector<pair<double, double>> generate_pair(const int n, const vector<double>& x_s = {}) const override;
 };
 
 template <class Distribution1, class Distribution2>
@@ -111,45 +111,45 @@ void Mixture<Distribution1, Distribution2>::save_to_file(ofstream& file)
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::f(const double x) const
+double Mixture<Distribution1, Distribution2>::density(const double x) const
 {
-	return (1 - p) * D1->f(x) + p * D2->f(x);
+	return (1 - p) * D1->density(x) + p * D2->density(x);
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::expected_value() const
+double Mixture<Distribution1, Distribution2>::M_Ksi() const
 {
-	return (1 - p) * D1->expected_value() + p * D2->expected_value();
+	return (1 - p) * D1->M_Ksi() + p * D2->M_Ksi();
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::variance() const
+double Mixture<Distribution1, Distribution2>::D_Ksi() const
 {
-	return (1 - p) * (pow(D1->expected_value(), 2) + D1->variance()) +
-		p * (pow(D2->expected_value(), 2) + D2->variance()) -
-		pow(expected_value(), 2);
+	return (1 - p) * (pow(D1->M_Ksi(), 2) + D1->D_Ksi()) +
+		p * (pow(D2->M_Ksi(), 2) + D2->D_Ksi()) -
+		pow(M_Ksi(), 2);
 }
 
 template <class Distribution1, class Distribution2>
 double Mixture<Distribution1, Distribution2>::asymmetry() const
 {
-	return ((1 - p) * (pow((D1->expected_value() - expected_value()), 3) + 3 * (D1->expected_value() - expected_value()) * D1->variance() + pow(D1->variance(), 3 / 2) * D1->asymmetry()) +
-		p * (pow((D2->expected_value() - expected_value()), 3) + 3 * (D2->expected_value() - expected_value()) * D2->variance() + pow(D2->variance(), 3 / 2) * D2->asymmetry())) /
-		pow(variance(), 3 / 2);
+	return ((1 - p) * (pow((D1->M_Ksi() - M_Ksi()), 3) + 3 * (D1->M_Ksi() - M_Ksi()) * D1->D_Ksi() + pow(D1->D_Ksi(), 3 / 2) * D1->asymmetry()) +
+		p * (pow((D2->M_Ksi() - M_Ksi()), 3) + 3 * (D2->M_Ksi() - M_Ksi()) * D2->D_Ksi() + pow(D2->D_Ksi(), 3 / 2) * D2->asymmetry())) /
+		pow(D_Ksi(), 3 / 2);
 }
 
 template <class Distribution1, class Distribution2>
 double Mixture<Distribution1, Distribution2>::kurtosis() const
 {
-	return ((1 - p) * (pow((D1->expected_value() - expected_value()), 4) + 6 * D1->variance() * pow((D1->expected_value() - expected_value()), 2) +
-		4 * (D1->expected_value() - expected_value()) * pow(D1->variance(), 3 / 2) * D1->asymmetry() + pow(D1->variance(), 2) * D1->kurtosis()) +
-		p * (pow((D2->expected_value() - expected_value()), 4) + 6 * D2->variance() * pow((D2->expected_value() - expected_value()), 2) +
-			4 * (D2->expected_value() - expected_value()) * pow(D2->variance(), 3 / 2) * D2->asymmetry() + pow(D2->variance(), 2) * D2->kurtosis()) - 3) /
-		pow(variance(), 2);
+	return ((1 - p) * (pow((D1->M_Ksi() - M_Ksi()), 4) + 6 * D1->D_Ksi() * pow((D1->M_Ksi() - M_Ksi()), 2) +
+		4 * (D1->M_Ksi() - M_Ksi()) * pow(D1->D_Ksi(), 3 / 2) * D1->asymmetry() + pow(D1->D_Ksi(), 2) * D1->kurtosis()) +
+		p * (pow((D2->M_Ksi() - M_Ksi()), 4) + 6 * D2->D_Ksi() * pow((D2->M_Ksi() - M_Ksi()), 2) +
+			4 * (D2->M_Ksi() - M_Ksi()) * pow(D2->D_Ksi(), 3 / 2) * D2->asymmetry() + pow(D2->D_Ksi(), 2) * D2->kurtosis()) - 3) /
+		pow(D_Ksi(), 2);
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::random_var() const
+double Mixture<Distribution1, Distribution2>::algorithm() const
 {
 	random_device rd;
 	default_random_engine gen(rd());
@@ -158,18 +158,18 @@ double Mixture<Distribution1, Distribution2>::random_var() const
 	double r = d(gen);
 
 	if (r > p)
-		return D1->random_var();
+		return D1->algorithm();
 	else
-		return D2->random_var();
+		return D2->algorithm();
 }
 
 template <class Distribution1, class Distribution2>
-vector<double> Mixture<Distribution1, Distribution2>::generate_sequence(const int n) const
+vector<double> Mixture<Distribution1, Distribution2>::selection(const int n) const
 {
 	vector<double> sequence;
 	for (int i = 0; i < n; i++)
 	{
-		double x = random_var();
+		double x = algorithm();
 		sequence.push_back(x);
 	}
 
@@ -178,19 +178,19 @@ vector<double> Mixture<Distribution1, Distribution2>::generate_sequence(const in
 }
 
 template <class Distribution1, class Distribution2>
-vector<pair<double, double>> Mixture<Distribution1, Distribution2>::generate_table_of_values(const int n, const vector<double>& x_s) const
+vector<pair<double, double>> Mixture<Distribution1, Distribution2>::generate_pair(const int n, const vector<double>& x_s) const
 {
 	vector<double> sequence;
 	vector<pair<double, double>> table;
 
 	if (x_s.empty())
-		sequence = generate_sequence(n);
+		sequence = selection(n);
 	else
 		sequence = x_s;
 
 	for (const double& x : sequence)
 	{
-		double y = f(x);
+		double y = density(x);
 		table.push_back(make_pair(x, y));
 	}
 

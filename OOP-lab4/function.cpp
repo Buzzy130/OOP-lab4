@@ -218,26 +218,45 @@ vector<pair<double, double>> Huber::generate_pair(const int n, const vector<doub
 }
 //===============================================================================//
 
-Empirical::Empirical(const IDistribution* D, int _n, int _k) :
-	n(_n > 1 ? _n : throw invalid_argument("Некорректный аргумент")), k(_k > 2 ? _k : (int)floor(log2(_n)) + 1)
+Empirical::Empirical(const IDistribution* D, int _n, int _k)
 {
-	x_selection = D->selection(_n);
+	if (_n <= 1)
+		throw invalid_argument("Некорректный аргумент");
+
+	n = _n;
+	k = (_k > 2) ? _k : (int)floor(log2(_n)) + 1;
+
+	x_selection = D->selection(n);
 	f_selection = generate_f_selection();
 }
 
-Empirical::Empirical(const Empirical* EM) : n(EM->n > 1 ? EM->n : throw invalid_argument("Некорректный аргумент")), k(EM->k > 2 ? EM->k : (int)floor(log2(EM->n) + 1)), x_selection(EM->x_selection), f_selection(EM->f_selection)
+Empirical::Empirical(const Empirical* EM)
 {
+	if (EM->n <= 1)
+		throw invalid_argument("Некорректный аргумент");
+
+	n = EM->n;
+	k = (EM->k > 2) ? EM->k : (int)floor(log2(EM->n) + 1);
+	x_selection = EM->x_selection;
 	f_selection = generate_f_selection();
 }
 
-Empirical::Empirical(const int _n, const int _k) : n(_n > 1 ? _n : throw invalid_argument("Некорректный аргумент")), k(_k > 2 ? _k : (int)floor(log2(_n) + 1))
+Empirical::Empirical(const int _n, const int _k)
 {
+	if (_n <= 1)
+		throw invalid_argument("Некорректный аргумент");
+
+	n = _n;
+	k = (_k > 2) ? _k : (int)floor(log2(_n) + 1);
+
 	x_selection = selection(n);
 	f_selection = generate_f_selection();
 }
 
-Empirical::Empirical(const vector<double>& x_selection) : n(x_selection.size()), k((int)floor(log2(x_selection.size())) + 1)
+Empirical::Empirical(const vector<double>& x_selection)
 {
+	n = x_selection.size();
+	k = (int)floor(log2(n) + 1);
 	this->x_selection = x_selection;
 	f_selection = generate_f_selection();
 }
