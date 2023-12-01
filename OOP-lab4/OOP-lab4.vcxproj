@@ -134,6 +134,7 @@
     <ClCompile Include="main_huber.cpp" />
     <ClCompile Include="main_mixture.cpp" />
     <ClCompile Include="Mixture.cpp" />
+    <ClCompile Include="start.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -144,6 +145,17 @@
     <ClInclude Include="main_empirical.h" />
     <ClInclude Include="main_huber.h" />
     <ClInclude Include="main_mixture.h" />
+    <ClInclude Include="start.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="empirical.txt" />
+    <Text Include="empirical2.txt" />
+    <Text Include="mixture_params.txt" />
+    <Text Include="primary1.txt" />
+    <Text Include="primary2.txt" />
+    <Text Include="selection1.txt" />
+    <Text Include="selection2.txt" />
+    <Text Include="theoretical.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

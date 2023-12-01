@@ -1,19 +1,19 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
-//#include "Interface.h"
+#include "start.h"
 
-/*void demo()
+void demo()
 {
 	cout << "7. Тест позднего связывания:" << endl << endl;
 
-	Primary* HB1 = new Primary(1, 1, 2);
-	Primary* HB2 = new Primary(1, 2, 6);
-	Primary* HB3 = new Primary(1, 2, -6);
-	Primary* HB4 = new Primary(1, 1, -2);
+	Huber* HB1 = new Huber(1, 1, 2);
+	Huber* HB2 = new Huber(1, 2, 6);
+	Huber* HB3 = new Huber(1, 2, -6);
+	Huber* HB4 = new Huber(1, 1, -2);
 
-	Mixture<Primary, Primary>* MX1 = new Mixture<Primary, Primary>(HB1, HB2, 0.5);
-	Mixture<Primary, Primary>* MX2 = new Mixture<Primary, Primary>(HB3, HB4, 0.5);
-	Mixture<Mixture<Primary, Primary>, Mixture<Primary, Primary>>* MX = new Mixture<Mixture<Primary, Primary>, Mixture<Primary, Primary>>(MX1, MX2, 0.5);
+	Mixture<Huber, Huber>* MX1 = new Mixture<Huber, Huber>(HB1, HB2, 0.5);
+	Mixture<Huber, Huber>* MX2 = new Mixture<Huber, Huber>(HB3, HB4, 0.5);
+	Mixture<Mixture<Huber, Huber>, Mixture<Huber, Huber>>* MX = new Mixture<Mixture<Huber, Huber>, Mixture<Huber, Huber>>(MX1, MX2, 0.5);
 
 
 	cout << "Параметр формы 1: " << MX->get_component1()->get_component1()->get_v() << endl;
@@ -33,8 +33,8 @@
 	cout << "Параметр сдвига 4: " << MX->get_component2()->get_component2()->get_shift() << endl << endl;
 
 	cout << "Теоретические характеристики:" << endl;
-	cout << "Математическое ожидание: " << MX->expected_value() << endl;
-	cout << "Дисперсия: " << MX->variance() << endl;
+	cout << "Математическое ожидание: " << MX->M_Ksi() << endl;
+	cout << "Дисперсия: " << MX->D_Ksi() << endl;
 	cout << "Коэффиицент асимметрии: " << MX->asymmetry() << endl;
 	cout << "Коэффициент эксцесса: " << MX->kurtosis() << endl << endl;
 
@@ -42,15 +42,15 @@
 	Empirical* EM2 = new Empirical(MX, 10000, 0);
 
 	cout << "Эмпирические характеристики:" << endl;
-	cout << "Математическое ожидание: " << MX->expected_value() << endl;
-	cout << "Дисперсия: " << MX->variance() << endl;
+	cout << "Математическое ожидание: " << MX->M_Ksi() << endl;
+	cout << "Дисперсия: " << MX->D_Ksi() << endl;
 	cout << "Коэффициент асимметрии: " << MX->asymmetry() << endl;
 	cout << "Коэффициент эксцесса: " << MX->kurtosis() << endl << endl;
 
 
-	vector<pair<double, double>> s1 = MX->generate_table_of_values(10000, MX->generate_sequence(10000));
-	vector<pair<double, double>> s2 = EM1->generate_table_of_values(10000, EM1->generate_sequence(10000));
-	vector<pair<double, double>> s3 = EM2->generate_table_of_values(10000, EM2->generate_sequence(10000));
+	vector<pair<double, double>> s1 = MX->generate_pair(10000, MX->selection(10000));
+	vector<pair<double, double>> s2 = EM1->generate_pair(10000, EM1->selection(10000));
+	vector<pair<double, double>> s3 = EM2->generate_pair(10000, EM2->selection(10000));
 
 	ofstream file1;
 	ofstream file2;
@@ -70,7 +70,7 @@
 	file1.close();
 	file2.close();
 	file3.close();
-}*/
+}
 
 int main(int argc, char** argv)
 {
@@ -78,10 +78,10 @@ int main(int argc, char** argv)
 
 	//demo();
 
-	//start();
+	start();
 
-	int result = Catch::Session().run(argc, argv);
-	return result;
+	//int result = Catch::Session().run(argc, argv);
+	//return result;
 
 	return 0;
 }

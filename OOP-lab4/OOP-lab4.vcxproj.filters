@@ -36,6 +36,9 @@
     <ClCompile Include="main_empirical.cpp">
       <Filter>Файлы ресурсов</Filter>
     </ClCompile>
+    <ClCompile Include="start.cpp">
+      <Filter>Файлы ресурсов</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function.h">
@@ -59,5 +62,34 @@
     <ClInclude Include="main_empirical.h">
       <Filter>Файлы ресурсов</Filter>
     </ClInclude>
+    <ClInclude Include="start.h">
+      <Filter>Файлы ресурсов</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="theoretical.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="primary2.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="primary1.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="mixture_params.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="empirical2.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="empirical.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="selection1.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
+    <Text Include="selection2.txt">
+      <Filter>Файлы ресурсов</Filter>
+    </Text>
   </ItemGroup>
 </Project>
