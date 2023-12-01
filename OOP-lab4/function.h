@@ -9,6 +9,7 @@
 #include <numeric>
 #include <algorithm>
 #include <string>
+#include "Distribution.h"
 
 using namespace std;
 
@@ -43,35 +44,35 @@ public:
 
 	HuberD(double v = 1, double scale = 1, double shift = 0);
 
-	double Huber(double x) const;
+	double density(double x) const override;
 
 	double phi(double x) const;
 
 	double phi_lower(double x) const;
 
-	double Mksi_huber() const;
+	double M_Ksi() const override;
 
-	double Dksi_huber() const;
+	double D_Ksi() const override;
 
-	double asymmetry_huber() const;
+	double asymmetry() const override;
 
-	double kurtosis_huber() const;
+	double kurtosis() const override;
 
 	double P() const;
 
 	double K(const double v) const;
 
-	double algorithm() const;
+	double algorithm() const override;
 
 	HuberD(ifstream& file);
 
-	void save_file(ofstream& file) const;
+	void save_to_file(ofstream& file) override;
 
-	void load_file(ifstream& file);
+	void load_file(ifstream& file) override;
 
-	vector<double> selection(const int n) const;
+	vector<double> selection(const int n) const override;
 
-	vector<pair<double, double>> generate_pair(const int n, const vector<double>& x_selection = {}) const;
+	vector<pair<double, double>> generate_pair(const int n, const vector<double>& x_selection = {}) const override;
 };
 
 class Empirical : public IDistribution, public IPersistent
@@ -102,15 +103,13 @@ public:
 
 	Empirical& operator=(const Empirical& ED);//+
 
-	double algorithm_empirical() const;//random var
+	double algorithm() const override;//random var
 
-	vector<double> generate_x_selection() const;//+
+	vector<double> selection(const int n) const override;
 
 	vector<double> generate_f_selection() const;//+
 
 	vector<pair<double, double>> generate_pair(const int n, const vector<double>& x_selection = {}) const override;//tabel values
-
-	vector<double> generate_values() const;
 
 	vector<double> get_x_selection() const;//+
 
@@ -124,14 +123,14 @@ public:
 
 	void load_file(ifstream& file) override;
 
-	double H_Empirical(const double x_selection) const;//+
+	double density(const double x_selection) const override;//+
 
-	double Mn() const;//+
+	double M_Ksi() const override;//+
 
-	double Dn() const;//+
+	double D_Ksi() const override;//+
 
-	double asymmetry_empirical() const;//+
+	double asymmetry() const override;//+
 
-	double kurtosis_empirical() const;//+
+	double kurtosis() const override;//+
 };
 

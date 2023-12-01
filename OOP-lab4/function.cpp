@@ -59,7 +59,7 @@ void HuberD::set_shift(const double shift)
 	this->shift = shift;
 }
 
-double HuberD::Huber(const double x) const
+double HuberD::density(const double x) const
 {
 	if (abs((x - this->shift) / this->scale) <= this->v)
 	{
@@ -78,22 +78,22 @@ double HuberD::phi_lower(double x) const//ф(x)
 {
 	return 1. / sqrt(2. * M_PI) * exp(-1. / 2. * pow(x, 2.));
 }
-double HuberD::Mksi_huber() const//мат ожидание
+double HuberD::M_Ksi() const//мат ожидание
 {
 	return this->shift;
 }
-double HuberD::Dksi_huber() const//дисперсия
+double HuberD::D_Ksi() const//дисперсия
 {
 	return 1. + 2. * phi_lower(this->v) * (pow(this->v, 2.) + 2.) / (pow(this->v, 3.) * this->k);
 }
-double HuberD::asymmetry_huber() const//ассиметрия
+double HuberD::asymmetry() const//ассиметрия
 {
 	return 0.;
 }
-double HuberD::kurtosis_huber() const//коэфф эксцесса
+double HuberD::kurtosis() const//коэфф эксцесса
 {
 	return (3. * (2. * phi(this->v) - 1.) + 2. * phi_lower(this->v) * (24. / pow(this->v, 5.) + 24. / pow(this->v, 3.) + 12. /
-		this->v + this->v)) / (pow(Dksi_huber(), 2.) * this->k) - 3.;
+		this->v + this->v)) / (pow(D_Ksi(), 2.) * this->k) - 3.;
 }
 double HuberD::P() const//вероятности попадания в центральный интервал 
 {
@@ -155,7 +155,7 @@ void HuberD::load_file(ifstream& file)
 	this->shift = shift;
 }
 
-void HuberD::save_file(ofstream& file) const
+void HuberD::save_to_file(ofstream& file)
 {
 	string filename = "output.txt";
 
@@ -191,7 +191,7 @@ vector<pair<double, double>> HuberD::generate_pair(const int n, const vector<dou
 
 	for (const double& x : sequence)
 	{
-		double y = Huber(x);
+		double y = density(x);
 		res.push_back(make_pair(x, y));
 	}
 
@@ -427,25 +427,25 @@ vector<pair<double, double>> Mixture<Distribution1, Distribution2>::generate_pai
 Empirical::Empirical(const IDistribution* D, int _n, int _k) :
 	n(_n > 1 ? _n : throw invalid_argument("Некорректный аргумент")), k(_k > 2 ? _k : (int)floor(log2(_n)) + 1)
 {
-	x_selection = D->generate_sequence(_n);
-	f_selection = generate_values();
+	x_selection = D->selection(_n);
+	f_selection = generate_f_selection();
 }
 
 Empirical::Empirical(const Empirical* EM) : n(EM->n > 1 ? EM->n : throw invalid_argument("Некорректный аргумент")), k(EM->k > 2 ? EM->k : (int)floor(log2(EM->n) + 1)), x_selection(EM->x_selection), f_selection(EM->f_selection)
 {
-	f_selection = generate_values();
+	f_selection = generate_f_selection();
 }
 
 Empirical::Empirical(const int _n, const int _k) : n(_n > 1 ? _n : throw invalid_argument("Некорректный аргумент")), k(_k > 2 ? _k : (int)floor(log2(_n) + 1))
 {
-	x_selection = generate_sequence(n);
-	f_selection = generate_values();
+	x_selection = selection(n);
+	f_selection = generate_f_selection();
 }
 
 Empirical::Empirical(const vector<double>& x_s) : n(x_s.size()), k((int)floor(log2(x_s.size())) + 1)
 {
 	this->x_selection = x_s;
-	f_selection = generate_values();
+	f_selection = generate_f_selection();
 }
 
 Empirical::Empirical(ifstream& file)
@@ -471,7 +471,7 @@ Empirical& Empirical::operator=(const Empirical& EM)
 	return *this;
 }
 
-double Empirical::algorithm_empirical() const
+double Empirical::algorithm() const
 {
 	vector<double> intervals;
 	vector<double> densities;
@@ -498,12 +498,12 @@ double Empirical::algorithm_empirical() const
 
 }
 
-vector<double> Empirical::generate_sequence(const int n) const
+vector<double> Empirical::selection(const int n) const//generate_x_selection
 {
 	vector<double> result;
 
 	for (int i = 0; i < n; i++)
-		result.push_back(algorithm_empirical());
+		result.push_back(algorithm());
 
 	sort(result.begin(), result.end());
 
@@ -511,12 +511,12 @@ vector<double> Empirical::generate_sequence(const int n) const
 }
 
 
-vector<double> Empirical::generate_values() const
+vector<double> Empirical::generate_f_selection() const
 {
 	vector<double> result;
 
 	for (const double& x : x_selection)
-		result.push_back(H_Empirical(x));
+		result.push_back(density(x));
 
 	return result;
 }
@@ -611,11 +611,11 @@ void Empirical::load_file(ifstream& file)
 
 	n = x_selection.size();
 	k = (int)floor(log2(n)) + 1;
-	f_selection = generate_values();
+	f_selection = generate_f_selection();
 }
 
 
-double Empirical::H_Empirical(const double x) const
+double Empirical::density(const double x) const
 {
 	int k = (int)floor(log2((double)n)) + 1;
 	double min_x = *min_element(begin(x_selection), end(x_selection));
@@ -632,7 +632,7 @@ double Empirical::H_Empirical(const double x) const
 	return 0.0;
 }
 
-double Empirical::Mn() const
+double Empirical::M_Ksi() const
 {
 	double sum = 0;
 	for (int i = 0; i < n; ++i) {
@@ -642,9 +642,9 @@ double Empirical::Mn() const
 }
 
 
-double Empirical::Dn() const//+
+double Empirical::D_Ksi() const//+
 {
-	const double Mn_ksi = Mn();
+	const double Mn_ksi = M_Ksi();
 	double sum = 0;
 
 	for (int i = 0; i < n; ++i) {
@@ -655,10 +655,10 @@ double Empirical::Dn() const//+
 	return sum / n;
 }
 
-double Empirical::asymmetry_empirical() const
+double Empirical::asymmetry() const
 {
-	const double Mn_ksi = Mn();
-	const double Dn_ksi = Dn();
+	const double Mn_ksi = M_Ksi();
+	const double Dn_ksi = D_Ksi();
 	double sum = 0;
 
 	for (int i = 0; i < n; ++i)
@@ -667,10 +667,10 @@ double Empirical::asymmetry_empirical() const
 	return sum / (n * pow(Dn_ksi, 3 / 2));
 }
 
-double Empirical::kurtosis_empirical() const
+double Empirical::kurtosis() const
 {
-	const double Mn_ksi = Mn();
-	const double Dn_ksi = Dn();
+	const double Mn_ksi = M_Ksi();
+	const double Dn_ksi = D_Ksi();
 	double sum = 0;
 
 	for (int i = 0; i < n; ++i) {
