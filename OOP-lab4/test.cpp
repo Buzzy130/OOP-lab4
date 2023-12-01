@@ -75,7 +75,7 @@ TEST_CASE("Mixture Distribution - Variance Test")
     HD2->set_scale(3);
     Mixture<HuberD, HuberD>* MD = new Mixture<HuberD, HuberD>(HD1, HD2, 0.5);
 
-    CHECK(MD->Dksi_Mixture() == Approx(2.24).epsilon(0.01));//?
+    CHECK(MD->D_Ksi() == Approx(2.24).epsilon(0.01));//?
 }
 
 TEST_CASE("Late Binding Mechanism")

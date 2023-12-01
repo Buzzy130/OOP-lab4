@@ -231,21 +231,21 @@ public:
 
 	void save_to_file(ofstream& file) override;
 
-	double H_Mixture(const double x) const;//+
+	double density(const double x) const;//+
 
-	double Mksi_mixture() const;//+
+	double M_Ksi() const;//+
 
-	double Dksi_Mixture() const;//+
+	double D_Ksi() const;//+
 
-	double asymmetry_mixture() const;//+
+	double asymmetry() const;//+
 
-	double kurtosis_mixture() const;//+
+	double kurtosis() const;//+
 
-	double algorithm_mixture() const;//+
+	double algorithm() const;//+
 
-	vector<double> selection_mixture(const int n) const;
+	vector<double> selection(const int n) const;
 
-	vector<pair<double, double>> generate_pair_mixture(const int n, const vector<double>& x_selection = {}) const;
+	vector<pair<double, double>> generate_pair(const int n, const vector<double>& x_selection = {}) const;
 
 
 };
@@ -305,19 +305,19 @@ void Mixture<Distribution1, Distribution2>::set_p(const double p)
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::H_Mixture(const double x) const//плотность
+double Mixture<Distribution1, Distribution2>::density(const double x) const//плотность
 {
 	return (1 - p) * HD1->Huber(x) + p * HD2->Huber(x);
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::Mksi_mixture() const
+double Mixture<Distribution1, Distribution2>::M_Ksi() const
 {
 	return (1 - p) * HD1->Mksi_huber() + p * HD2->Mksi_huber();
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::Dksi_Mixture() const
+double Mixture<Distribution1, Distribution2>::D_Ksi() const
 {
 	return (1 - p) * (pow(HD1->Mksi_huber(), 2) + HD1->Dksi_huber()) +
 		p * (pow(HD2->Mksi_huber(), 2) + HD2->Dksi_huber()) -
@@ -327,7 +327,7 @@ double Mixture<Distribution1, Distribution2>::Dksi_Mixture() const
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::asymmetry_mixture() const
+double Mixture<Distribution1, Distribution2>::asymmetry() const
 {
 	return (1 / pow(Dksi_Mixture(), 3 / 2)) *
 		((1 - p) *
@@ -342,7 +342,7 @@ double Mixture<Distribution1, Distribution2>::asymmetry_mixture() const
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::kurtosis_mixture() const
+double Mixture<Distribution1, Distribution2>::kurtosis() const
 {
 	return (1 / pow(Dksi_Mixture(), 2)) * (
 		(1 - p) * (pow(HD1->Mksi_huber() - Mksi_mixture(), 4) +
@@ -374,7 +374,7 @@ void Mixture<Distribution1, Distribution2>::save_to_file(ofstream& file)
 }
 
 template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::algorithm_mixture() const {//моделирует случайную величину для смеси
+double Mixture<Distribution1, Distribution2>::algorithm() const {//моделирует случайную величину для смеси
 	random_device rd;
 	default_random_engine gen(rd());
 	uniform_real_distribution<> d(0, 1);
@@ -388,7 +388,7 @@ double Mixture<Distribution1, Distribution2>::algorithm_mixture() const {//мо�
 }
 
 template <class Distribution1, class Distribution2>
-vector<double> Mixture<Distribution1, Distribution2>::selection_mixture(const int n) const//формирование выборки случайно величины по закону смеси
+vector<double> Mixture<Distribution1, Distribution2>::selection(const int n) const//формирование выборки случайно величины по закону смеси
 {
 	vector<double> sequence;
 	for (int i = 0; i < n; i++)
@@ -403,7 +403,7 @@ vector<double> Mixture<Distribution1, Distribution2>::selection_mixture(const in
 
 
 template <class Distribution1, class Distribution2>
-vector<pair<double, double>> Mixture<Distribution1, Distribution2>::generate_pair_mixture(const int n, const vector<double>& x_selection) const
+vector<pair<double, double>> Mixture<Distribution1, Distribution2>::generate_pair(const int n, const vector<double>& x_selection) const
 {
 	vector<double> sequence;
 	vector<pair<double, double>> table;
