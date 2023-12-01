@@ -102,13 +102,13 @@ public:
 
 	Empirical& operator=(const Empirical& ED);//+
 
-	double algorithm_empirical() const;//+
+	double algorithm() const override;//+
 
-	vector<double> generate_x_selection() const;//+
+	vector<double> generate_x_selection() const override;//+
 
 	vector<double> generate_f_selection() const;//+
 
-	vector<pair<double, double>> generate_pair() const;
+	vector<pair<double, double>> generate_pair() const override;
 
 	vector<double> get_x_selection() const;//+
 

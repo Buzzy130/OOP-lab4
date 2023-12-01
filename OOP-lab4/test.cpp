@@ -24,42 +24,42 @@ TEST_CASE("Standard Distribution")
 
 TEST_CASE("Shift Scale Transformation")
 {
-    Primary* HB = new Primary();
-    HB->set_scale(2);
-    HB->set_shift(2);
+    HuberD* HD = new HuberD();
+    HD->set_scale(2);
+    HD->set_shift(2);
 
-    CHECK(HB->f(0) == Approx(0.103).epsilon(0.01));
-    CHECK(HB->expected_value() == Approx(2).epsilon(0.01));
-    CHECK(HB->variance() == Approx(2.24).epsilon(0.01));
-    CHECK(HB->asymmetry() == Approx(0).epsilon(0.01));
-    CHECK(HB->kurtosis() == Approx(2.37).epsilon(0.01));
+    CHECK(HD->Huber(0) == Approx(0.103).epsilon(0.01));
+    CHECK(HD->Mksi_huber() == Approx(2).epsilon(0.01));
+    CHECK(HD->Dksi_huber() == Approx(2.24).epsilon(0.01));
+    CHECK(HD->asymmetry_huber() == Approx(0).epsilon(0.01));
+    CHECK(HD->kurtosis_huber() == Approx(2.37).epsilon(0.01));
 }
 
 TEST_CASE("Mixture Distribution")
 {
-    Primary* HB1 = new Primary();
-    Primary* HB2 = new Primary();
-    HB1->set_scale(2);
-    HB2->set_scale(2);
-    HB1->set_shift(2);
-    HB2->set_shift(2);
-    Mixture<Primary, Primary>* MX = new Mixture<Primary, Primary>(HB1, HB2, 0.5);
+    HuberD * HD1 = new HuberD();
+    HuberD* HD2 = new HuberD();
+    HD1->set_scale(2);
+    HD2->set_scale(2);
+    HD1->set_shift(2);
+    HD2->set_shift(2);
+    Mixture<HuberD, HuberD>* MD = new Mixture<HuberD, HuberD>(HD1, HD2, 0.5);
 
-    CHECK(MX->f(0) == Approx(0.103).epsilon(0.01));
-    CHECK(MX->expected_value() == Approx(2).epsilon(0.01));
-    CHECK(MX->variance() == Approx(2.24).epsilon(0.01));
-    CHECK(MX->asymmetry() == Approx(0).epsilon(0.01));
-    CHECK(MX->kurtosis() == Approx(1.77).epsilon(0.01));
+    CHECK(MD->H_Mixture(0) == Approx(0.103).epsilon(0.01));
+    CHECK(MD->expected_value() == Approx(2).epsilon(0.01));
+    CHECK(MD->variance() == Approx(2.24).epsilon(0.01));
+    CHECK(MD->asymmetry() == Approx(0).epsilon(0.01));
+    CHECK(MD->kurtosis() == Approx(1.77).epsilon(0.01));
 }
 
 TEST_CASE("Mixture Distribution - Expected Value Test")
 {
-    Primary* HB1 = new Primary();
-    Primary* HB2 = new Primary();
-    HB1->set_scale(2);
-    HB2->set_scale(2);
-    HB1->set_shift(1);
-    HB2->set_shift(2);
+    HuberD* HD1 = new HuberD();
+    HuberD* HD2 = new HuberD();
+    HD1->set_scale(2);
+    HD2->set_scale(2);
+    HD1->set_shift(1);
+    HD2->set_shift(2);
     Mixture<Primary, Primary>* MX = new Mixture<Primary, Primary>(HB1, HB2, 0.5);
 
     CHECK(MX->expected_value() == Approx(1.5).epsilon(0.01));
@@ -67,10 +67,10 @@ TEST_CASE("Mixture Distribution - Expected Value Test")
 
 TEST_CASE("Mixture Distribution - Variance Test")
 {
-    Primary* HB1 = new Primary();
-    Primary* HB2 = new Primary();
-    HB1->set_scale(1);
-    HB2->set_scale(3);
+    HuberD* HD1 = new HuberD();
+    HuberD* HD2 = new HuberD();
+    HD1->set_scale(1);
+    HD2->set_scale(3);
     Mixture<Primary, Primary>* MX = new Mixture<Primary, Primary>(HB1, HB2, 0.5);
 
     CHECK(MX->variance() == Approx(2.24).epsilon(0.01));
