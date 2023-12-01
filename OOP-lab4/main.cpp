@@ -1,11 +1,8 @@
 #define CATCH_CONFIG_RUNNER
 #include "catch.hpp"
-#include "function.h"
-#include "function.cpp"
-#include "Distribution.h"
-#include "lib.h"
+//#include "Interface.h"
 
-void demo()
+/*void demo()
 {
 	cout << "7. Тест позднего связывания:" << endl << endl;
 
@@ -73,18 +70,18 @@ void demo()
 	file1.close();
 	file2.close();
 	file3.close();
-}
+}*/
 
 int main(int argc, char** argv)
 {
 	setlocale(LC_ALL, "ru");
 
-	demo();
+	//demo();
 
 	//start();
 
-	//int result = Catch::Session().run(argc, argv);
-	//return result;
+	int result = Catch::Session().run(argc, argv);
+	return result;
 
 	return 0;
 }

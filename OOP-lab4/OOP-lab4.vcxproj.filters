@@ -24,6 +24,9 @@
     <ClCompile Include="test.cpp">
       <Filter>Файлы ресурсов</Filter>
     </ClCompile>
+    <ClCompile Include="Mixture.cpp">
+      <Filter>Файлы ресурсов</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="function.h">
@@ -32,7 +35,7 @@
     <ClInclude Include="catch.hpp">
       <Filter>Файлы ресурсов</Filter>
     </ClInclude>
-    <ClInclude Include="Distribution.h">
+    <ClInclude Include="Distributions.h">
       <Filter>Файлы ресурсов</Filter>
     </ClInclude>
     <ClInclude Include="lib.h">

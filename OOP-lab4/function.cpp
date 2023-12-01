@@ -1,441 +1,245 @@
 ﻿#include "function.h"
-#include "Distribution.h"
 
-Primary::Primary(double v, double scale, double shift)
+Huber::Huber(double v, double scale, double shift)
 {
-	if (v <= 0 || scale <= 0)
-		throw invalid_argument("Ошибка: один или несколько параметров не корректны");
+    if (v <= 0 || scale <= 0)
+        throw invalid_argument("Ошибка: один или несколько параметров не корректны");
 
-	this->v = v;
-	this->k = K(v);
-	this->scale = scale;
-	this->shift = shift;
+    this->v = v;
+    this->k = K(v);
+    this->scale = scale;
+    this->shift = shift;
 }
 
-Primary::Primary(ifstream& file)
+Huber::Huber(ifstream& file)
 {
-	load_from_file(file);
+    load_from_file(file);
 }
 
-void Primary::save_to_file(ofstream& file)
+void Huber::save_to_file(ofstream& file)
 {
-	string filename;
-	cout << "Введите имя файла, куда следует записать параметры основного распределения: ";
-	cin >> filename;
+    string filename;
+    cout << "Введите имя файла, куда следует записать параметры основного распределения: ";
+    cin >> filename;
 
-	file.open(filename);
-	file << this->v << endl << this->scale << endl << this->shift;
-	file.close();
+    file.open(filename);
+    file << this->v << endl << this->scale << endl << this->shift;
+    file.close();
 
-	cout << "Параметры основного распределения сохранены в файл " + filename << endl;
+    cout << "Параметры основного распределения сохранены в файл " + filename << endl;
 }
 
-void Primary::load_from_file(ifstream& file)
+void Huber::load_from_file(ifstream& file)
 {
-	string filename;
-	double v, scale, shift;
+    string filename;
+    double v, scale, shift;
 
-	cout << "Введите имя файла, откуда следует считать параметры основного распределения: ";
-	cin >> filename;
+    cout << "Введите имя файла, откуда следует считать параметры основного распределения: ";
+    cin >> filename;
 
-	file.open(filename);
+    file.open(filename);
 
-	if (!file)
-		throw runtime_error("Ошибка: не удалось открыть файл");
+    if (!file)
+        throw runtime_error("Ошибка: не удалось открыть файл");
 
-	file >> v >> scale >> shift;
+    file >> v >> scale >> shift;
 
-	file.close();
+    file.close();
 
-	if (v <= 0 || scale <= 0)
-		throw invalid_argument("Ошибка: один или несколько параметров некорректны");
+    if (v <= 0 || scale <= 0)
+        throw invalid_argument("Ошибка: один или несколько параметров некорректны");
 
-	this->v = v;
-	this->scale = scale;
-	this->shift = shift;
-}
-
-
-double Primary::get_v() const
-{
-	return this->v;
-}
-
-double Primary::get_k() const
-{
-	return this->k;
+    this->v = v;
+    this->scale = scale;
+    this->shift = shift;
 }
 
 
-void Primary::set_v(double v)
+double Huber::get_v() const
 {
-	if (v <= 0)
-		throw invalid_argument("Ошибка: v <= 0");
-
-	this->v = v;
-	this->k = K(this->v);
+    return this->v;
 }
 
-double Primary::get_scale() const
+double Huber::get_k() const
 {
-	return this->scale;
-}
-
-void Primary::set_scale(const double scale)
-{
-	if (scale <= 0)
-		throw invalid_argument("Ошибка: scale <= 0");
-	this->scale = scale;
-}
-
-double Primary::get_shift() const
-{
-	return this->shift;
-}
-
-void Primary::set_shift(const double shift)
-{
-	this->shift = shift;
-}
-
-double Primary::f(const double x) const
-{
-	return (1. / (sqrt(2. * M_PI) * this->k) * (abs((x - this->shift) / this->scale) <= this->v ? exp(-pow((x - this->shift) / this->scale, 2.) / 2.) : exp(pow(this->v, 2.) / 2. - this->v * abs((x - this->shift) / this->scale)))) / this->scale;
-}
-
-double Primary::phi(double x) const
-{
-	return 0.5 * (1. + erf(x / sqrt(2.)));
-}
-
-double Primary::phi_lower(double x) const
-{
-	return 1. / sqrt(2. * M_PI) * exp(-1. / 2. * pow(x, 2.));
-}
-
-double Primary::expected_value() const
-{
-	return this->shift;
-}
-
-double Primary::variance() const
-{
-	return 1. + 2. * phi_lower(this->v) * (pow(this->v, 2.) + 2.) / (pow(this->v, 3.) * this->k);
-}
-
-double Primary::asymmetry() const
-{
-	return 0.;
-}
-
-double Primary::kurtosis() const
-{
-	return (3. * (2. * phi(this->v) - 1.) + 2. * phi_lower(this->v) * (24. / pow(this->v, 5.) + 24. / pow(this->v, 3.) + 12. / this->v + this->v)) / (pow(variance(), 2.) * this->k) - 3.;
-}
-
-double Primary::P() const
-{
-	return (2. * phi(this->v) - 1.) / this->k;
-}
-
-double Primary::K(const double v) const
-{
-	return 2. / v * phi_lower(v) + 2. * phi(v) - 1.;
-}
-
-double Primary::random_var() const
-{
-	random_device rd;
-	default_random_engine gen(rd());
-	uniform_real_distribution<> d(0, 1);
-
-	//шаг 1
-	double r1 = d(gen);
-
-
-	if (r1 <= P())
-	{
-		//шаг 2
-		double r2, r3, x1;
-
-		do {
-			r2 = d(gen);
-			r3 = d(gen);
-			x1 = sqrt(-2 * log(r2)) * cos(2 * M_PI * r3);
-			//double x1 = sqrt(-2 * log(r2)) * sin(2 * M_PI * r3)
-		} while (!(-this->v <= x1 && x1 <= this->v)); //шаг 3
-
-		return x1 * this->scale + this->shift;
-	}
-	else
-	{
-		//шаг 4
-		double r4 = d(gen);
-		double x2 = this->v - log(r4) / this->v;
-
-		//шаг 5
-		return r1 < (1 + P()) / 2 ? x2 * this->scale + this->shift : -x2 * this->scale + this->shift;
-	}
-}
-
-vector<double> Primary::generate_sequence(const int n) const
-{
-	vector<double> res;
-
-	for (int i = 0; i < n; i++)
-	{
-		double x = random_var();
-		res.push_back(x);
-	}
-
-	sort(res.begin(), res.end());
-
-	return res;
-}
-
-vector<pair<double, double>> Primary::generate_table_of_values(const int n, const vector<double>& x_s) const
-{
-	vector<pair<double, double>> res;
-	vector<double> sequence;
-
-	if (x_s.empty())
-		sequence = generate_sequence(n);
-	else
-		sequence = x_s;
-
-	for (const double& x : sequence)
-	{
-		double y = f(x);
-		res.push_back(make_pair(x, y));
-	}
-
-	return res;
+    return this->k;
 }
 
 
-//---------------------------------------mixture--------------------------------------------------//
-
-
-template<class Distribution1, class Distribution2>
-class Mixture : public IDistribution, public IPersistent
+void Huber::set_v(double v)
 {
-private:
+    if (v <= 0)
+        throw invalid_argument("Ошибка: v <= 0");
 
-	Distribution1* D1;
-
-	Distribution2* D2;
-
-	double p;
-
-public:
-
-	Mixture(Distribution1* D1, Distribution2* D2, double p) : D1(D1), D2(D2), p(p) {};
-
-	Distribution1* get_component1();
-
-	Distribution2* get_component2();
-
-	double get_p() const;
-
-	void set_p(const double p);
-
-	void load_from_file(ifstream& file) override;
-
-	void save_to_file(ofstream& file) override;
-
-	double f(const double x) const override;
-
-	double expected_value() const override;
-
-	double variance() const override;
-
-	double asymmetry() const override;
-
-	double kurtosis() const override;
-
-	double random_var() const override;
-
-	vector<double> generate_sequence(const int n) const override;
-
-	vector<pair<double, double>> generate_table_of_values(const int n, const vector<double>& x_s = {}) const override;
-};
-
-template <class Distribution1, class Distribution2>
-Distribution1* Mixture<Distribution1, Distribution2>::get_component1()
-{
-	return D1;
+    this->v = v;
+    this->k = K(this->v);
 }
 
-template <class Distribution1, class Distribution2>
-Distribution2* Mixture<Distribution1, Distribution2>::get_component2()
+double Huber::get_scale() const
 {
-	return D2;
+    return this->scale;
 }
 
-
-template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::get_p() const
+void Huber::set_scale(const double scale)
 {
-	return p;
+    if (scale <= 0)
+        throw invalid_argument("Ошибка: scale <= 0");
+    this->scale = scale;
 }
 
-template <class Distribution1, class Distribution2>
-void Mixture<Distribution1, Distribution2>::set_p(const double p)
+double Huber::get_shift() const
 {
-	if (p < 0 || p > 1)
-		throw invalid_argument("Çíà÷åíèå ïàðàìåòðà íåêîððåêòíî");
-	this->p = p;
+    return this->shift;
 }
 
-template <class Distribution1, class Distribution2>
-void Mixture<Distribution1, Distribution2>::load_from_file(ifstream& file)
+void Huber::set_shift(const double shift)
 {
-	string filename;
-	//file.open("mixture_params.txt");
-	ifstream file1;
-	ifstream file2;
-
-	cout << "Ââåäèòå èìÿ ôàéëà ñ ïàðàìåòðîì ñìåñè ðàñïðåäåëåíèé: ";
-	cin >> filename;
-
-	file.open(filename);
-	if (!file)
-		throw runtime_error("Îøèáêà: íå óäàëîñü îòêðûòü ôàéë");
-
-	file >> p;
-	get_component1()->load_from_file(file1);
-	get_component2()->load_from_file(file2);
-
-	file.close();
+    this->shift = shift;
 }
 
-template <class Distribution1, class Distribution2>
-void Mixture<Distribution1, Distribution2>::save_to_file(ofstream& file)
+double Huber::density(const double x) const
 {
-	ofstream file1;
-	ofstream file2;
-	file.open("mixture_params.txt");
+	double z = (x - this->shift) / this->scale;
+	double abs_z = abs(z);
 
-	file << p;
-	get_component1()->save_to_file(file1);
-	get_component2()->save_to_file(file2);
+	double numerator = (abs_z <= this->v) ? exp(-pow(z, 2.) / 2.) : exp(pow(this->v, 2.) / 2. - this->v * abs_z);
+	double denominator = sqrt(2. * M_PI) * this->k * this->scale;
 
-	file.close();
-
-	cout << "Ïàðàìåòð ñìåñè ñîõðàíåí â ôàéë mixture_params.txt" << endl;
-
+	return numerator / denominator;
 }
 
-template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::f(const double x) const
+double Huber::phi(double x) const
 {
-	return (1 - p) * D1->f(x) + p * D2->f(x);
+    return 0.5 * (1. + erf(x / sqrt(2.)));
 }
 
-template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::expected_value() const
+double Huber::phi_lower(double x) const
 {
-	return (1 - p) * D1->expected_value() + p * D2->expected_value();
+    return 1. / sqrt(2. * M_PI) * exp(-1. / 2. * pow(x, 2.));
 }
 
-template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::variance() const
+double Huber::M_Ksi() const
 {
-	return (1 - p) * (pow(D1->expected_value(), 2) + D1->variance()) +
-		p * (pow(D2->expected_value(), 2) + D2->variance()) -
-		pow(expected_value(), 2);
+    return this->shift;
 }
 
-template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::asymmetry() const
+double Huber::D_Ksi() const
 {
-	return ((1 - p) * (pow((D1->expected_value() - expected_value()), 3) + 3 * (D1->expected_value() - expected_value()) * D1->variance() + pow(D1->variance(), 3 / 2) * D1->asymmetry()) +
-		p * (pow((D2->expected_value() - expected_value()), 3) + 3 * (D2->expected_value() - expected_value()) * D2->variance() + pow(D2->variance(), 3 / 2) * D2->asymmetry())) /
-		pow(variance(), 3 / 2);
+    return 1. + 2. * phi_lower(this->v) * (pow(this->v, 2.) + 2.) / (pow(this->v, 3.) * this->k);
 }
 
-template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::kurtosis() const
+double Huber::asymmetry() const
 {
-	return ((1 - p) * (pow((D1->expected_value() - expected_value()), 4) + 6 * D1->variance() * pow((D1->expected_value() - expected_value()), 2) +
-		4 * (D1->expected_value() - expected_value()) * pow(D1->variance(), 3 / 2) * D1->asymmetry() + pow(D1->variance(), 2) * D1->kurtosis()) +
-		p * (pow((D2->expected_value() - expected_value()), 4) + 6 * D2->variance() * pow((D2->expected_value() - expected_value()), 2) +
-			4 * (D2->expected_value() - expected_value()) * pow(D2->variance(), 3 / 2) * D2->asymmetry() + pow(D2->variance(), 2) * D2->kurtosis()) - 3) /
-		pow(variance(), 2);
+    return 0.;
 }
 
-template <class Distribution1, class Distribution2>
-double Mixture<Distribution1, Distribution2>::random_var() const
+double Huber::kurtosis() const
 {
-	random_device rd;
-	default_random_engine gen(rd());
-	uniform_real_distribution<> d(0, 1);
-
-	double r = d(gen);
-
-	if (r > p)
-		return D1->random_var();
-	else
-		return D2->random_var();
+    return (3. * (2. * phi(this->v) - 1.) + 2. * phi_lower(this->v) * (24. / pow(this->v, 5.) + 24. / pow(this->v, 3.) + 12. / this->v + this->v)) / (pow(D_Ksi(), 2.) * this->k) - 3.;
 }
 
-template <class Distribution1, class Distribution2>
-vector<double> Mixture<Distribution1, Distribution2>::generate_sequence(const int n) const
+double Huber::P() const
 {
-	vector<double> sequence;
-	for (int i = 0; i < n; i++)
-	{
-		double x = random_var();
-		sequence.push_back(x);
-	}
-
-	sort(sequence.begin(), sequence.end());
-	return sequence;
+    return (2. * phi(this->v) - 1.) / this->k;
 }
 
-template <class Distribution1, class Distribution2>
-vector<pair<double, double>> Mixture<Distribution1, Distribution2>::generate_table_of_values(const int n, const vector<double>& x_s) const
+double Huber::K(const double v) const
 {
-	vector<double> sequence;
-	vector<pair<double, double>> table;
-
-	if (x_s.empty())
-		sequence = generate_sequence(n);
-	else
-		sequence = x_s;
-
-	for (const double& x : sequence)
-	{
-		double y = f(x);
-		table.push_back(make_pair(x, y));
-	}
-
-	return table;
+    return 2. / v * phi_lower(v) + 2. * phi(v) - 1.;
 }
 
-//------------------------------------------------Emprical--------------------------------------------------//
+double Huber::algorithm() const
+{
+    random_device rd;
+    default_random_engine gen(rd());
+    uniform_real_distribution<> d(0, 1);
+
+    //шаг 1
+    double r1 = d(gen);
+
+
+    if (r1 <= P())
+    {
+        //шаг 2
+        double r2, r3, x1;
+
+        do {
+            r2 = d(gen);
+            r3 = d(gen);
+            x1 = sqrt(-2 * log(r2)) * cos(2 * M_PI * r3);
+            //double x1 = sqrt(-2 * log(r2)) * sin(2 * M_PI * r3)
+        } while (!(-this->v <= x1 && x1 <= this->v)); //шаг 3
+
+        return x1 * this->scale + this->shift;
+    }
+    else
+    {
+        //шаг 4
+        double r4 = d(gen);
+        double x2 = this->v - log(r4) / this->v;
+
+        //шаг 5
+        return r1 < (1 + P()) / 2 ? x2 * this->scale + this->shift : -x2 * this->scale + this->shift;
+    }
+}
+
+vector<double> Huber::selection(const int n) const
+{
+    vector<double> res;
+
+    for (int i = 0; i < n; i++)
+    {
+        double x = algorithm();
+        res.push_back(x);
+    }
+
+    sort(res.begin(), res.end());
+
+    return res;
+}
+
+vector<pair<double, double>> Huber::generate_pair(const int n, const vector<double>& x_s) const
+{
+    vector<pair<double, double>> res;
+    vector<double> sequence;
+
+    if (x_s.empty())
+        sequence = selection(n);
+    else
+        sequence = x_s;
+
+    for (const double& x : sequence)
+    {
+        double y = density(x);
+        res.push_back(make_pair(x, y));
+    }
+
+    return res;
+}
+//===============================================================================//
+
 Empirical::Empirical(const IDistribution* D, int _n, int _k) :
 	n(_n > 1 ? _n : throw invalid_argument("Некорректный аргумент")), k(_k > 2 ? _k : (int)floor(log2(_n)) + 1)
 {
-	x_s = D->generate_sequence(_n);
-	f_s = generate_values();
+	x_selection = D->selection(_n);
+	f_selection = generate_f_selection();
 }
 
-Empirical::Empirical(const Empirical* EM) : n(EM->n > 1 ? EM->n : throw invalid_argument("Некорректный аргумент")), k(EM->k > 2 ? EM->k : (int)floor(log2(EM->n) + 1)), x_s(EM->x_s), f_s(EM->f_s)
+Empirical::Empirical(const Empirical* EM) : n(EM->n > 1 ? EM->n : throw invalid_argument("Некорректный аргумент")), k(EM->k > 2 ? EM->k : (int)floor(log2(EM->n) + 1)), x_selection(EM->x_selection), f_selection(EM->f_selection)
 {
-	f_s = generate_values();
+	f_selection = generate_f_selection();
 }
 
 Empirical::Empirical(const int _n, const int _k) : n(_n > 1 ? _n : throw invalid_argument("Некорректный аргумент")), k(_k > 2 ? _k : (int)floor(log2(_n) + 1))
 {
-	x_s = generate_sequence(n);
-	f_s = generate_values();
+	x_selection = selection(n);
+	f_selection = generate_f_selection();
 }
 
-Empirical::Empirical(const vector<double>& x_s) : n(x_s.size()), k((int)floor(log2(x_s.size())) + 1)
+Empirical::Empirical(const vector<double>& x_selection) : n(x_selection.size()), k((int)floor(log2(x_selection.size())) + 1)
 {
-	this->x_s = x_s;
-	f_s = generate_values();
+	this->x_selection = x_selection;
+	f_selection = generate_f_selection();
 }
 
 Empirical::Empirical(ifstream& file)
@@ -445,8 +249,8 @@ Empirical::Empirical(ifstream& file)
 
 Empirical::~Empirical()
 {
-	x_s.clear();
-	f_s.clear();
+	x_selection.clear();
+	f_selection.clear();
 }
 
 Empirical& Empirical::operator=(const Empirical& EM)
@@ -454,14 +258,14 @@ Empirical& Empirical::operator=(const Empirical& EM)
 	if (this == &EM)
 		return *this;
 
-	x_s = EM.x_s;
-	f_s = EM.f_s;
+	x_selection = EM.x_selection;
+	f_selection = EM.f_selection;
 	n = EM.n;
 	k = EM.k;
 	return *this;
 }
 
-double Empirical::random_var() const
+double Empirical::algorithm() const
 {
 	vector<double> intervals;
 	vector<double> densities;
@@ -488,12 +292,12 @@ double Empirical::random_var() const
 
 }
 
-vector<double> Empirical::generate_sequence(const int n) const
+vector<double> Empirical::selection(const int n) const
 {
 	vector<double> result;
 
 	for (int i = 0; i < n; i++)
-		result.push_back(random_var());
+		result.push_back(algorithm());
 
 	sort(result.begin(), result.end());
 
@@ -501,34 +305,34 @@ vector<double> Empirical::generate_sequence(const int n) const
 }
 
 
-vector<double> Empirical::generate_values() const
+vector<double> Empirical::generate_f_selection() const
 {
 	vector<double> result;
 
-	for (const double& x : x_s)
-		result.push_back(f(x));
+	for (const double& x : x_selection)
+		result.push_back(density(x));
 
 	return result;
 }
 
-vector<pair<double, double>> Empirical::generate_table_of_values(const int n, const vector<double>& x_s) const
+vector<pair<double, double>> Empirical::generate_pair(const int n, const vector<double>& x_s) const
 {
 	vector<pair<double, double >> result;
 
 	for (int i = 0; i < n; i++)
-		result.push_back(make_pair(x_s[i], f_s[i]));
+		result.push_back(make_pair(x_s[i], f_selection[i]));
 
 	return result;
 }
 
-vector<double> Empirical::get_x_s() const
+vector<double> Empirical::get_x_selection() const
 {
-	return x_s;
+	return x_selection;
 }
 
-vector<double> Empirical::get_f_s() const
+vector<double> Empirical::get_f_selection() const
 {
-	return f_s;
+	return f_selection;
 }
 
 int Empirical::get_n() const
@@ -543,7 +347,7 @@ int Empirical::get_k() const
 
 void Empirical::save_to_file(ofstream& file)
 {
-	vector<pair<double, double>> pairs = generate_table_of_values(n);
+	vector<pair<double, double>> pairs = generate_pair(n);
 
 	ofstream file_sequence;
 	ofstream file_values;
@@ -595,73 +399,73 @@ void Empirical::load_from_file(ifstream& file)
 	while (!file.eof())
 	{
 		file >> x;
-		x_s.push_back(x);
+		x_selection.push_back(x);
 	}
 	file.close();
 
-	n = x_s.size();
+	n = x_selection.size();
 	k = (int)floor(log2(n)) + 1;
-	f_s = generate_values();
+	f_selection = generate_f_selection();
 }
 
 
-double Empirical::f(const double x) const
+double Empirical::density(const double x) const
 {
 	int k = (int)floor(log2((double)n)) + 1;
-	double min_x = *min_element(begin(x_s), end(x_s));
-	double max_x = *max_element(begin(x_s), end(x_s));
+	double min_x = *min_element(begin(x_selection), end(x_selection));
+	double max_x = *max_element(begin(x_selection), end(x_selection));
 	double delta = (max_x - min_x) / (double)k;
 
 	for (int i = 0; i < k; i++)
 		if (min_x + delta * i <= x && x < min_x + delta * (i + 1))
 		{
-			int n_i = count_if(x_s.begin(), x_s.end(), [i, k, min_x, max_x, delta](double x) { return i == k - 1 ? min_x + delta * (double)i <= x && x <= min_x + delta * (double)(i + 1) : min_x + delta * (double)i <= x && x < min_x + delta * (double)(i + 1); });
+			int n_i = count_if(x_selection.begin(), x_selection.end(), [i, k, min_x, max_x, delta](double x) { return i == k - 1 ? min_x + delta * (double)i <= x && x <= min_x + delta * (double)(i + 1) : min_x + delta * (double)i <= x && x < min_x + delta * (double)(i + 1); });
 			return n_i / (n * delta);
 		}
 
 	return 0.0;
 }
 
-double Empirical::expected_value() const
+double Empirical::M_Ksi() const
 {
 	double sum = 0;
 	for (int i = 0; i < n; ++i) {
-		sum += x_s[i];
+		sum += x_selection[i];
 	}
 	return sum / (double)n;
 }
 
-double Empirical::variance() const
+double Empirical::D_Ksi() const
 {
-	const double expected_val = expected_value();
+	const double expected_val = M_Ksi();
 	double sum = 0;
 
 	for (int i = 0; i < n; ++i)
-		sum += pow(x_s[i] - expected_val, 2);
+		sum += pow(x_selection[i] - expected_val, 2);
 
 	return sum / n;
 }
 
 double Empirical::asymmetry() const
 {
-	const double expected_val = expected_value();
-	const double variance_val = variance();
+	const double expected_val = M_Ksi();
+	const double variance_val = D_Ksi();
 	double sum = 0;
 
 	for (int i = 0; i < n; ++i)
-		sum += pow(x_s[i] - expected_val, 3);
+		sum += pow(x_selection[i] - expected_val, 3);
 
 	return sum / (n * pow(variance_val, 3 / 2));
 }
 
 double Empirical::kurtosis() const
 {
-	const double expected_val = expected_value();
-	const double variance_val = variance();
+	const double expected_val = M_Ksi();
+	const double variance_val = D_Ksi();
 	double sum = 0;
 
 	for (int i = 0; i < n; ++i) {
-		sum += pow(x_s[i] - expected_val, 4);
+		sum += pow(x_selection[i] - expected_val, 4);
 	}
 	return (sum / (n * pow(variance_val, 2))) - 3;
 }

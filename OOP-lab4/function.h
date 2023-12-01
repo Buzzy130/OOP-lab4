@@ -1,6 +1,7 @@
-#include "Distribution.h"
+#pragma once
+#include "Distributions.h"
 
-class Primary : public IDistribution, public IPersistent
+class Huber : public IDistribution, public IPersistent
 {
 private:
 
@@ -14,9 +15,9 @@ private:
 
 public:
 
-	Primary(double v = 1, double scale = 1, double shift = 0);
+	Huber(double v = 1, double scale = 1, double shift = 0);
 
-	Primary(ifstream& file);
+	Huber(ifstream& file);
 
 	void save_to_file(ofstream& file) override;
 
@@ -36,15 +37,15 @@ public:
 
 	void set_shift(const double shift);
 
-	double f(const double x) const override;
+	double density(const double x) const override;
 
 	double phi(const double x) const;
 
 	double phi_lower(const double x) const;
 
-	double expected_value() const override;
+	double M_Ksi() const override;
 
-	double variance() const override;
+	double D_Ksi() const override;
 
 	double asymmetry() const override;
 
@@ -54,20 +55,21 @@ public:
 
 	double K(const double v) const;
 
-	double random_var() const override;
+	double algorithm() const override;
 
-	vector<double> generate_sequence(const int n) const override;
+	vector<double> selection(const int n) const override;
 
-	vector<pair<double, double>> generate_table_of_values(const int n, const vector<double>& x_s = {}) const override;
+	vector<pair<double, double>> generate_pair(const int n, const vector<double>& x_selection = {}) const override;
 };
-//-----------------------------------------emprical-------------------------------------------------//
+//========================================================================//
+
 class Empirical : public IDistribution, public IPersistent
 {
 private:
 
-	vector<double> x_s;
+	vector<double> x_selection;
 
-	vector<double> f_s;
+	vector<double> f_selection;
 
 	int n = 0;
 
@@ -81,7 +83,7 @@ public:
 
 	Empirical(const int _n, const int _k);
 
-	Empirical(const vector<double>& x_s);
+	Empirical(const vector<double>& x_selection);
 
 	Empirical(ifstream& file);
 
@@ -89,17 +91,17 @@ public:
 
 	Empirical& operator=(const Empirical& EM);
 
-	double random_var() const override;
+	double algorithm() const override;
 
-	vector<double> generate_sequence(const int n) const override;
+	vector<double> selection(const int n) const override;
 
-	vector<double> generate_values() const;
+	vector<double> generate_f_selection() const;
 
-	vector<pair<double, double>> generate_table_of_values(const int n, const vector<double>& x_s = {}) const override;
+	vector<pair<double, double>> generate_pair(const int n, const vector<double>& x_selection = {}) const override;
 
-	vector<double> get_x_s() const;
+	vector<double> get_x_selection() const;
 
-	vector<double> get_f_s() const;
+	vector<double> get_f_selection() const;
 
 	int get_n() const;
 
@@ -109,11 +111,11 @@ public:
 
 	void load_from_file(ifstream& file) override;
 
-	double f(const double x) const override;
+	double density(const double x) const override;
 
-	double expected_value() const override;
+	double M_Ksi() const override;
 
-	double variance() const override;
+	double D_Ksi() const override;
 
 	double asymmetry() const override;
 

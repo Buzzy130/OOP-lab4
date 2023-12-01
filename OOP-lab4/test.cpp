@@ -1,6 +1,7 @@
 #include "catch.hpp"
 #include "function.h"
-#include "function.cpp"
+#include "Mixture.cpp"
+
 
 TEST_CASE("Basic Methods")
 {
