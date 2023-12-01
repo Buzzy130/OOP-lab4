@@ -130,6 +130,9 @@
   <ItemGroup>
     <ClCompile Include="function.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="main_empirical.cpp" />
+    <ClCompile Include="main_huber.cpp" />
+    <ClCompile Include="main_mixture.cpp" />
     <ClCompile Include="Mixture.cpp" />
     <ClCompile Include="test.cpp" />
   </ItemGroup>
@@ -138,6 +141,9 @@
     <ClInclude Include="Distributions.h" />
     <ClInclude Include="function.h" />
     <ClInclude Include="lib.h" />
+    <ClInclude Include="main_empirical.h" />
+    <ClInclude Include="main_huber.h" />
+    <ClInclude Include="main_mixture.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
